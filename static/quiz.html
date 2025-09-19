@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UBIK Solutions Quiz</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: #f5f5f5;
+      margin: 0;
+      padding: 0;
+    }
+    .header {
+      background-color: white;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .header-logo {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+    .header-logo span {
+      color: #E91E63;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+    }
+    #avatar-container {
+      width: 100%;
+      height: 250px;
+      background: url('/static/ubik-01.jpg') center/cover;
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+    }
+    #avatar-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    .quiz-buttons {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      margin-top: 1rem;
+      margin-bottom: 1rem;
+    }
+    .quiz-buttons button {
+      display: flex;
+      align-items: center;
+      background-color: #E91E63;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-weight: 500;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      gap: 8px;
+    }
+    .quiz-buttons button:hover {
+      background-color: #d81b60;
+    }
+    .quiz-buttons .icon {
+      width: 20px;
+      height: 20px;
+    }
+    .quiz-box {
+      background: white;
+      border-radius: 12px;
+      padding: 1rem;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+    .question-area h2 {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+    .question-area p {
+      font-size: 16px;
+      margin-bottom: 1rem;
+    }
+    .input-area {
+      display: flex;
+      align-items: center;
+      background: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 30px;
+      padding: 8px 12px;
+    }
+    .input-area textarea {
+      flex: 1;
+      font-size: 16px;
+      background: transparent;
+      font-family: 'Roboto', sans-serif;
+      border: none;
+      outline: none;
+      resize: none;
+      height: 50px;
+    }
+    .input-area button {
+      background: #E91E63;
+      border: none;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: 5px;
+      cursor: pointer;
+    }
+    .input-area img {
+      width: 20px;
+      height: 20px;
+    }
+    .nav-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 1.5rem;
+    }
+    .nav-buttons button {
+      flex: 1;
+      margin: 0 5px;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      background-color: white;
+      color: #E91E63;
+      border: 2px solid #E91E63;
+      cursor: pointer;
+    }
+    .nav-buttons button.active {
+      background-color: #E91E63;
+      color: white;
+    }
+    .results {
+      margin-top: 1rem;
+      background: #fce4ec;
+      padding: 1rem;
+      border-radius: 12px;
+      display: none;
+      border-left: 4px solid #E91E63;
+    }
+    .summary-report {
+      margin-top: 1rem;
+      background: #e1f5fe;
+      padding: 1rem;
+      border-radius: 12px;
+      display: none;
+      border-left: 4px solid #E91E63;
+    }
+    .summary-report h3 {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+    .summary-report p {
+      font-size: 14px;
+      margin-bottom: 0.5rem;
+    }
+    #waveform {
+      display: none;
+      margin-left: 10px;
+    }
+    #waveform .dot {
+      width: 12px;
+      height: 12px;
+      background-color: #E91E63;
+      border-radius: 50%;
+      animation: pulse 1s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 0.8; }
+      50% { transform: scale(1.8); opacity: 0.4; }
+      100% { transform: scale(1); opacity: 0.8; }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+  <header class="header">
+    <div class="header-logo">UBIK <span>SOLUTIONS</span></div>
+    <div class="header-logo">AI <span>DERMAT</span></div>
+  </header>
+  <div class="container">
+    <div id="avatar-container">
+      <canvas id="avatar-canvas"></canvas>
+    </div>
+    <div class="quiz-buttons">
+      <button onclick="repeatQuestion()">
+        <img src="/static/repeat.png" alt="Repeat" class="icon" /> Repeat
+      </button>
+      <button onclick="startListening()">
+        <img src="/static/mic.png" alt="Record" class="icon" /> Record
+      </button>
+      <button onclick="skipQuestion()">
+        <img src="/static/skip.png" alt="Skip" class="icon" /> Skip
+      </button>
+    </div>
+    <div class="quiz-box">
+      <div id="question-area" class="question-area">
+        <h2>Question <span id="questionNumber">1</span></h2>
+        <p id="questionText">Loading question...</p>
+      </div>
+      <div class="input-area">
+        <textarea id="answerInput" placeholder="Type your answer or use voice..."></textarea>
+        <button onclick="submitAnswer()"><img src="/static/send.png" alt="Send"></button>
+        <div id="waveform"><div class="dot"></div></div>
+      </div>
+      <div id="results" class="results">
+        <h3>Quiz Results</h3>
+        <div id="feedback"></div>
+      </div>
+      <div id="summary-report" class="summary-report">
+        <h3>Quiz Summary Report</h3>
+        <div id="summary-content"></div>
+      </div>
+    </div>
+    <div class="nav-buttons">
+      <button onclick="location.href='/'">AI Assist</button>
+      <button class="active" onclick="location.href='/quiz'">AI Dermat</button>
+    </div>
+  </div>
+  <script>
+    let mixer, clock = new THREE.Clock();
+    let animations = {};
+    let rootBone = null;
+    let morphDict, morphInfluences;
+    let isSpeaking = false;
+
+    function loadModelAnimations(gltf) {
+      mixer = new THREE.AnimationMixer(gltf.scene);
+      console.log("Available animations:", gltf.animations.map(clip => clip.name));
+      if (gltf.animations.length > 0) {
+        animations.Idle = mixer.clipAction(gltf.animations[0]);
+        animations.Idle.setLoop(THREE.LoopRepeat);
+        animations.Idle.play();
+        console.log(`Playing first animation: ${gltf.animations[0].name}`);
+      } else {
+        console.warn("No animations found in GLB file.");
+      }
+      gltf.scene.traverse(child => {
+        if (child.isBone && child.name.toLowerCase().includes("root")) {
+          rootBone = child;
+        }
+      });
+      console.log("Loaded animations:", Object.keys(animations));
+    }
+
+    function playTalkingAnimation() {
+      if (!mixer || !animations.Idle) {
+        console.warn("No animation available for talking, using blend shapes only");
+        return;
+      }
+      animations.Idle.play();
+      console.log("Playing animation for talking");
+    }
+
+    function stopTalkingAnimation() {
+      if (animations.Idle) {
+        animations.Idle.play();
+        console.log("Ensuring animation is playing");
+      } else {
+        console.log("No animation to play");
+      }
+    }
+
+    function startMouthAnimation() {
+      if (!morphDict || !morphInfluences) {
+        console.warn("No morph targets available");
+        return;
+      }
+      const index = morphDict['mouthOpen'];
+      if (index === undefined) {
+        console.warn("mouthOpen blend shape not found");
+        return;
+      }
+      clearInterval(window.mouthInterval);
+      window.mouthInterval = setInterval(() => {
+        const t = performance.now() / 100;
+        const value = Math.abs(Math.sin(t)) * 0.8;
+        morphInfluences[index] = value;
+      }, 100);
+    }
+
+    function stopMouthAnimation() {
+      if (morphDict && morphInfluences && morphDict['mouthOpen'] !== undefined) {
+        morphInfluences[morphDict['mouthOpen']] = 0;
+      }
+      clearInterval(window.mouthInterval);
+      console.log("Stopped mouth animation");
+    }
+
+    function animateAvatar() {
+      requestAnimationFrame(animateAvatar);
+      const delta = clock.getDelta();
+      if (mixer) {
+        try {
+          mixer.update(delta);
+          console.log("Animation mixer updated");
+        } catch (error) {
+          console.error("Error updating animation mixer:", error);
+        }
+      }
+      if (rootBone) rootBone.rotation.y = 0;
+    }
+    animateAvatar();
+
+    let model, renderer, scene, camera;
+    function initAvatar() {
+      const canvas = document.getElementById('avatar-canvas');
+      const container = document.getElementById('avatar-container');
+      const bounds = container.getBoundingClientRect();
+
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(30, bounds.width / bounds.height, 0.01, 5000);
+      camera.position.set(0, 0, 3.5);
+
+      renderer = new THREE.WebGLRenderer({
+        canvas: canvas,
+        antialias: true,
+        alpha: true
+      });
+      renderer.setSize(bounds.width, bounds.height);
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.outputEncoding = THREE.sRGBEncoding;
+      renderer.shadowMap.enabled = true;
+      renderer.toneMapping = THREE.NoToneMapping;
+      renderer.toneMappingExposure = 1.2;
+      renderer.setClearColor(0x000000, 0);
+
+      const controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.05;
+      controls.target.set(0, 0, 0);
+      controls.enableZoom = false;
+      controls.enablePan = false;
+      controls.enableRotate = false;
+      controls.update();
+
+      const loader = new THREE.GLTFLoader();
+      loader.load('static/male_char_LightBaked_15thJuly.glb', function (gltf) {
+        model = gltf.scene;
+        model.position.set(0, -4.7, 0);
+        model.rotation.set(0, 0.1, 0);
+        model.scale.set(3, 3, 3);
+        console.log('Model Position after setting:', model.position);
+        scene.add(model);
+
+        loadModelAnimations(gltf);
+
+        let skinnedMesh;
+        model.traverse(child => {
+          if (child.isSkinnedMesh && child.morphTargetDictionary) {
+            skinnedMesh = child;
+          }
+        });
+
+        if (skinnedMesh) {
+          morphDict = skinnedMesh.morphTargetDictionary;
+          morphInfluences = skinnedMesh.morphTargetInfluences;
+          console.log("Available morph targets:", Object.keys(morphDict));
+
+          if ('mouthSmile' in morphDict) {
+            morphInfluences[morphDict['mouthSmile']] = 0.3;
+            console.log("Applied mouthSmile blend shape");
+          }
+
+          if ('eyesClosed' in morphDict) {
+            function blinkEyes(i) {
+              morphInfluences[i] = 1;
+              setTimeout(() => morphInfluences[i] = 0, 100);
+              console.log("Eyes blinked");
+            }
+
+            const eyeIndex = morphDict['eyesClosed'];
+            setInterval(() => {
+              blinkEyes(eyeIndex);
+            }, 5000 + Math.random() * 2000);
+          }
+        } else {
+          console.warn("No skinned mesh with morph targets found");
+        }
+
+        const box = new THREE.Box3().setFromObject(model);
+        const center = box.getCenter(new THREE.Vector3());
+        console.log('Initial Center Point:', center);
+
+        function animate() {
+          requestAnimationFrame(animate);
+          controls.update();
+          renderer.render(scene, camera);
+          if (model) {
+            const box = new THREE.Box3().setFromObject(model);
+            const center = box.getCenter(new THREE.Vector3());
+          }
+        }
+
+        animate();
+      }, undefined, function (error) {
+        console.error('Error loading GLB model:', error);
+      });
+
+      window.addEventListener('resize', () => {
+        const newBounds = container.getBoundingClientRect();
+        camera.aspect = newBounds.width / newBounds.height;
+        camera.updateProjectionMatrix();
+        renderer.setSize(newBounds.width, newBounds.height);
+      });
+    }
+    initAvatar();
+
+    let currentQuestion = 0;
+    let questions = [];
+    let answers = {};
+    const totalQuestions = 5;
+
+    async function speakWithElevenLabs(text) {
+      try {
+        const response = await fetch('/api/tts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text })
+        });
+        if (!response.ok) throw new Error('TTS request failed');
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const audio = new Audio(audioUrl);
+        audio.play();
+        audio.onplay = () => {
+          isSpeaking = true;
+          playTalkingAnimation();
+          startMouthAnimation();
+        };
+        audio.onended = () => {
+          isSpeaking = false;
+          stopTalkingAnimation();
+          stopMouthAnimation();
+        };
+      } catch (error) {
+        console.error('TTS error:', error);
+        document.getElementById('questionText').textContent += ' (Failed to speak question)';
+      }
+    }
+
+    function speakQuestion(text) {
+      if (!text || typeof text !== "string") return;
+      speakWithElevenLabs(text);
+    }
+
+    function switchTab(tab) {
+      const assistBtn = document.getElementById('assistBtn');
+      const dermatBtn = document.getElementById('dermatBtn');
+      if (tab === 'assist') {
+        assistBtn.classList.add('active');
+        dermatBtn.classList.remove('active');
+        location.href = '/';
+      } else {
+        dermatBtn.classList.add('active');
+        assistBtn.classList.remove('active');
+        location.href = '/quiz';
+      }
+    }
+
+    function displayQuestion() {
+      if (currentQuestion < totalQuestions && questions[currentQuestion]) {
+        document.getElementById('questionNumber').textContent = currentQuestion + 1;
+        document.getElementById('questionText').textContent = questions[currentQuestion];
+        speakQuestion(questions[currentQuestion]);
+        document.getElementById('answerInput').value = '';
+        document.getElementById('results').style.display = 'none';
+        document.getElementById('summary-report').style.display = 'none';
+      } else {
+        evaluateQuiz();
+      }
+    }
+
+    function repeatQuestion() {
+      if (currentQuestion < totalQuestions && questions[currentQuestion]) {
+        speakQuestion(questions[currentQuestion]);
+      }
+    }
+
+    function submitAnswer() {
+      const answer = document.getElementById('answerInput').value.trim();
+      if (answer) {
+        answers[currentQuestion] = answer;
+        currentQuestion++;
+        displayQuestion();
+      }
+    }
+
+    function skipQuestion() {
+      answers[currentQuestion] = 'SKIPPED';
+      currentQuestion++;
+      displayQuestion();
+    }
+
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.continuous = false;
+
+    function startListening() {
+      recognition.start();
+      document.getElementById('waveform').style.display = 'block';
+    }
+
+    recognition.onresult = function(event) {
+      const transcript = event.results[0][0].transcript;
+      document.getElementById('answerInput').value = transcript;
+      submitAnswer();
+      document.getElementById('waveform').style.display = 'none';
+    };
+
+    recognition.onerror = function(event) {
+      console.error('Speech recognition error:', event.error);
+      document.getElementById('waveform').style.display = 'none';
+    };
+
+    recognition.onend = function() {
+      document.getElementById('waveform').style.display = 'none';
+    };
+
+    fetch('/api/quiz-questions')
+      .then(res => res.json())
+      .then(data => {
+        questions = data.map(q => {
+          if (!q.startsWith('How') && !q.startsWith('What') && !q.startsWith('Why')) {
+            return `How does UBIK Solutions ensure ${q.toLowerCase()}?`;
+          }
+          return q;
+        });
+        displayQuestion();
+      }).catch(err => {
+        console.error('Error fetching questions:', err);
+        document.getElementById('questionText').textContent = 'Error loading questions.';
+      });
+
+    function evaluateQuiz() {
+      let totalScore = 0;
+      let correctAnswers = 0;
+      const feedback = {};
+
+      for (let i = 0; i < totalQuestions; i++) {
+        feedback[i] = 'No feedback available; please try again.';
+      }
+
+      Promise.all(Object.keys(answers).map(async (qIndex) => {
+        const question = questions[qIndex];
+        const answer = answers[qIndex];
+        try {
+          const response = await fetch('/api/evaluate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question, answer })
+          });
+          const data = await response.json();
+          console.log(`Evaluation response for Q${parseInt(qIndex) + 1}:`, data);
+          if (data.feedback && typeof data.score === 'number') {
+            feedback[qIndex] = data.feedback;
+            totalScore += data.score || 0;
+            if (data.score >= 0.8) correctAnswers++;
+          } else {
+            feedback[qIndex] = 'Error evaluating answer; please try again.';
+            console.warn(`Invalid response for Q${parseInt(qIndex) + 1}:`, data);
+          }
+        } catch (err) {
+          console.error(`Error evaluating Q${parseInt(qIndex) + 1}:`, err);
+          feedback[qIndex] = 'Error evaluating answer; please try again.';
+        }
+      })).then(() => {
+        const avg = (totalScore / totalQuestions).toFixed(2);
+        const percentage = ((avg / 1.0) * 100).toFixed(0);
+        let resultText = `<strong>Average Score: ${avg}/1.0 (${percentage}%)</strong><br>`;
+        resultText += `Correct Answers: ${correctAnswers} out of ${totalQuestions}<br><br>`;
+        resultText += `<strong>Per-Question Feedback:</strong><br>`;
+        for (let i in feedback) {
+          resultText += `Question ${parseInt(i) + 1}: ${feedback[i]}<br>`;
+        }
+        document.getElementById('results').style.display = 'block';
+        document.getElementById('feedback').innerHTML = resultText;
+
+        let summaryText = `<h3>UBIK Solutions Quiz Performance Report</h3>`;
+        summaryText += `<strong>Overall Performance</strong><br>`;
+        summaryText += `You completed the UBIK Solutions quiz, achieving an average score of ${avg}/1.0 (${percentage}%) with ${correctAnswers} out of ${totalQuestions} questions answered correctly.<br><br>`;
+
+        // Strengths
+        const strengths = [];
+        for (let i in feedback) {
+          if (feedback[i].toLowerCase().includes('correct') || (answers[i] !== 'SKIPPED' && feedback[i].includes('UBIK'))) {
+            if (questions[i].toLowerCase().includes('anti-acne')) {
+              strengths.push('Strong understanding of UBIK Solutions’ Anti-Acne product line, such as Sebogel.');
+            } else if (questions[i].toLowerCase().includes('anti-ageing') || questions[i].toLowerCase().includes('aging')) {
+              strengths.push('Solid knowledge of UBIK Solutions’ Anti-Ageing products, such as Reti K Cream.');
+            } else {
+              strengths.push('Good grasp of UBIK Solutions’ services or mission, such as AI-driven dermatology.');
+            }
+          }
+        }
+        summaryText += `<strong>Strengths</strong><br>`;
+        if (strengths.length > 0) {
+          summaryText += `Your performance demonstrates the following strengths:<br>`;
+          strengths.forEach(s => summaryText += `- ${s}<br>`);
+        } else {
+          summaryText += `No specific strengths identified due to limited correct answers. Consider reviewing UBIK Solutions’ offerings for improvement.<br>`;
+        }
+        summaryText += `<br>`;
+
+        // Areas for Improvement
+        const improvements = [];
+        for (let i in feedback) {
+          if (answers[i] === 'SKIPPED' || feedback[i].toLowerCase().includes('incorrect') || feedback[i].toLowerCase().includes('incomplete')) {
+            if (questions[i].toLowerCase().includes('anti-acne')) {
+              improvements.push('Deepen your knowledge of UBIK Solutions’ Anti-Acne products, such as Sebogel’s ingredients (e.g., Salicylic Acid, Niacinamide).');
+            } else if (questions[i].toLowerCase().includes('anti-ageing') || questions[i].toLowerCase().includes('aging')) {
+              improvements.push('Learn more about UBIK Solutions’ Anti-Ageing products, such as Reti K Cream’s use of Encapsulated Retinol.');
+            } else {
+              improvements.push('Review UBIK Solutions’ services or mission, such as AI dermatology applications or iDoc Academy.');
+            }
+          }
+        }
+        summaryText += `<strong>Areas for Improvement</strong><br>`;
+        if (improvements.length > 0) {
+          summaryText += `To enhance your understanding, focus on the following areas:<br>`;
+          improvements.forEach(i => summaryText += `- ${i}<br>`);
+        } else {
+          summaryText += `No major areas for improvement identified. Continue to build on your strong performance.<br>`;
+        }
+        summaryText += `<br>`;
+
+        // Detailed Answer Review
+        summaryText += `<strong>Detailed Answer Review</strong><br>`;
+        for (let i in feedback) {
+          const question = questions[i] || 'Unknown question';
+          const answer = answers[i] || 'No answer provided';
+          summaryText += `<strong>Question ${parseInt(i) + 1}: ${question}</strong><br>`;
+          summaryText += `Your Answer: ${answer === 'SKIPPED' ? 'Skipped' : answer}<br>`;
+          summaryText += `Feedback: ${feedback[i]}<br>`;
+          if (answer !== 'SKIPPED') {
+            if (question.toLowerCase().includes('anti-acne') || question.toLowerCase().includes('ingredients')) {
+              summaryText += `Reference: This question relates to UBIK Solutions' Anti-Acne products, such as Sebogel with Salicylic Acid and Niacinamide. Your answer ${feedback[i].toLowerCase().includes('correct') ? 'aligned well' : 'could better align'} with these details.<br>`;
+            } else if (question.toLowerCase().includes('anti-ageing') || question.toLowerCase().includes('aging')) {
+              summaryText += `Reference: This question relates to UBIK Solutions' Anti-Ageing products, such as Reti K Cream with Encapsulated Retinol. Your answer ${feedback[i].toLowerCase().includes('correct') ? 'aligned well' : 'could better align'} with these details.<br>`;
+            } else {
+              summaryText += `Reference: This question ties to UBIK Solutions' mission or services, such as AI-driven dermatology or iDoc Academy. Your answer ${feedback[i].toLowerCase().includes('correct') ? 'demonstrated good knowledge' : 'could include more details'} about these areas.<br>`;
+            }
+          } else {
+            summaryText += `Reference: Skipping this question missed an opportunity to demonstrate knowledge. Reviewing UBIK Solutions’ data could help.<br>`;
+          }
+          summaryText += `<br>`;
+        }
+
+        // Recommendations
+        summaryText += `<strong>Recommendations for Growth</strong><br>`;
+        if (avg >= 0.8) {
+          summaryText += `Your strong performance indicates a solid understanding of UBIK Solutions. To maintain and expand your knowledge, consider exploring advanced topics, such as the technical aspects of AI in dermatology or the formulation of products like Sebogel and Reti K Cream.<br>`;
+        } else if (avg >= 0.5) {
+          summaryText += `You have a good foundation in UBIK Solutions’ offerings. To improve, study key areas such as Anti-Acne and Anti-Ageing product details or the role of AI in our services. Reviewing the UBIK Solutions website or training materials can help.<br>`;
+        } else {
+          summaryText += `Your performance suggests a need for deeper familiarity with UBIK Solutions. Focus on understanding our core products (e.g., Anti-Acne, Anti-Ageing) and services (e.g., AI dermatology, iDoc Academy). Retaking the quiz after reviewing our data is recommended.<br>`;
+        }
+        summaryText += `For further learning, explore UBIK Solutions’ official resources or contact our training team for detailed product and service information.<br>`;
+
+        document.getElementById('summary-report').style.display = 'block';
+        document.getElementById('summary-content').innerHTML = summaryText;
+        document.getElementById('questionText').textContent = '';
+      }).catch(err => {
+        console.error('Error in evaluateQuiz:', err);
+        document.getElementById('feedback').innerText = 'Error processing results. Please try again.';
+        document.getElementById('results').style.display = 'block';
+        document.getElementById('summary-report').style.display = 'none';
+      });
+    }
+
+    document.getElementById('answerInput').addEventListener('keydown', function(event) {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        submitAnswer();
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,154 @@
+{
+  "product_categories": [
+    {
+      "name": "Anti-Acne",
+      "url": "https://ubiksolution.com/product-category/anti-acne/",
+      "products": [
+        {
+          "name": "Benzonext 10 % Gel 20 gm",
+          "price": "₹113",
+          "description": "Composed of potent and popular active Benzoyl Peroxide at its highest concentration.",
+          "category": "Anti-Acne",
+          "url": "https://www.mydermastore.in/products/details/benzonext-10-gel-745",
+          "ingredients": "10% Benzoyl Peroxide"
+        },
+        {
+          "name": "Benzonext C Gel 20 gm",
+          "price": "₹113",
+          "description": "Benzonext C Gel is composed of a synergistic combination of potent anti-acne agents like Clindamycin and Benzoyl Peroxide.Shows dual actions on acne by killing the bacteria causing acne.Helps to control the oil build-up that leads to acne.Prevents sebum buildup and unclogs pores.Reduces redness and inflammation.Works on a deeper level and prevents further acne breakouts.",
+          "category": "Anti-Acne",
+          "url": "https://ubiksolution.com/product/benzonext-c-gel-20-gm/",
+          "ingredients": "Benzoyl Peroxide, Clindamycin"
+        },
+        {
+          "name": "Aczee Serum 30 ML",
+          "price": "₹1350",
+          "description": " Formulated with 10% Azelaic Acid, a multifunctional active along with patented actives like Ferulic Acid & Resveratrol that synergistically address multiple skin concerns. Each application provides multiple benefits like acne & oil control, skin lightening, hydration, etc.",
+          "category": "Anti-Acne",
+          "url": "https://www.mydermastore.in/products/details/aczee-serum-754",
+          "ingredients": "Azelaic Acid, BioGenic Scleria, BioGenic Resveratrol, Scleria"
+        },
+        {
+          "name": "Sebollic Salicylic Acid Serum 20 ml",
+          "price": "₹539",
+          "description": " Purpose-Driven Formulation: Crafted for acne-prone and oily skin.Encapsulated Salicylic Acid: This ensures salicylic acid's stability and potency, treating the skin right where it needs it.Niacinamide Enrichment: Fades blemishes and expertly manages oil production.Canadian Willowherb™ Benefits: A natural defence against bacteria and redness linked to acne.Comprehensive Action: Goes deep to deter acne breakouts, reduces both blackheads and whiteheads and revives skin by exfoliating dead cells.",
+          "category": "Anti-Acne",
+          "url": "https://www.mydermastore.in/products/details/aczee-serum-754",
+          "ingredients": "Encapsulated Salicylic Acid Niacinamide PCCanadian Willowherbs™"
+        },
+        {
+          "name": "Saligly Peeling Solution 30 ml",
+          "price": "₹675",
+          "description": " Saligly Peeling Solution is tailored to unveil a skin that's radiant, rejuvenated, and blemish-free.Represents a cutting-edge exfoliation mechanism, integrating AHA, BHA, and Fruit AHA, ensuring a smooth skin complexion.AHA components (Lactic acid and Glycolic acid) facilitate skin exfoliation and refine its appearance.BHA, specifically Salicylic acid, deeply unclogs pores and boasts keratolytic attributes.The Fruit AHA, Lime Pearl™, hailing from the Australian Caviar lime, aids in natural skin shedding and complexion enhancement.",
+          "category": "Anti-Acne",
+          "url": "https://www.mydermastore.in/products/details/saligly-peeling-solution-30-ml-327",
+          "ingredients": "Lactic Acid: Mild exfoliant that helps in reducing acne and improving the skin's natural moisture factor.Glycolic Acid: Exfoliates dead skin cells and revives the skin's texture.Salicylic Acid: Penetrates oil-filled pores and exfoliates from inside out.Lime Pearl™ Extract: Promotes natural skin exfoliation for brighter and smoother skin."
+        },
+        {
+          "name": "Sebonia Niacinamide Zinc Serum 20 ml",
+          "price": "₹539",
+          "description": " Sebonia Serum is your holistic solution for skin clarity and vibrancy. It masterfully diminishes blemishes, tightens enlarged pores, and evens out the skin tone.It boasts of potent, clinically backed ingredients like Niacinamide and Zinc, known to regulate oil production and prevent acne.More than just topical, it fortifies the skin barrier, shielding your skin from the onslaught of indoor and outdoor pollutants, as well as harmful UV radiation.Enjoy a formulation that sidesteps the sticky or greasy aftermath. It's free from parabens and ensures your pores remain unclogged.Dive into the Sebonia experience for skin that radiates flawlessness.",
+          "category": "Anti-Acne",
+          "url": "https://www.mydermastore.in/products/details/sebonia-serum-296",
+          "ingredients": "Niacinamide PC, Zinc PCA"
+        },
+        {
+          "name": "Sebogel Skin Gel 30 gm",
+          "price": "₹225",
+          "description": "Experience the transformative prowess of Sebogel, a highly effective gel designed to combat acne and oily skin.This potent gel not only diminishes existing acne but also addresses a range of skin concerns including pimples, redness, whiteheads, and blackheads.Enriched with salicylic acid and nicotinamide, Sebogel penetrates deep into the skin layers, purging pores of excess oil and preventing the recurrence of acne.Say hello to clear, radiant, and pimple-free skin with Sebogel.",
+          "category": "Anti-Acne",
+          "url": "https://www.mydermastore.in/products/details/sebogel-skin-gel-121",
+          "ingredients": "Salicylic Acid Niacinamide"
+        },
+        {
+          "name": "Sefpil Mandelic Acid Cream 30 gm",
+          "price": "₹234",
+          "description": " Discover the transformative power of Sefpil, an innovative cream specially formulated with Mandelic acid and glycolic acid.This unique blend is tailored to combat acne, blemishes, and uneven skin tone, providing a radiant complexion.Sefpil effectively diminishes dark spots, pigmentation, and the effects of photo-aged skin, unveiling a clearer, more even skin texture.By regulating oil production and preserving the skin's natural barrier, Sefpil aids in maintaining a healthy complexion.It's the ideal solution for pre- and post-treatments such as laser resurfacing, chemical peeling, and microdermabrasion.",
+          "category": "Anti-Acne",
+          "url": "https://www.mydermastore.in/products/details/sefpil-cream-122",
+          "ingredients": "Mandelic Acid,Glycolic Acid"
+        },
+        {
+          "name": "O Wash Face Wash 150 ml",
+          "price": "₹563",
+          "description": " O wash facewash is meticulously crafted to cater to the needs of those with oily and acne-prone skin.It dives deep to cleanse the pores, get rid of impurities, and eliminate excessive sebum, preventing further oil build-up.Its potent blend of Salicylic Acid and Niacinamide acts as a barrier against acne that arises from clogged pores and excessive oil secretion.While it battles the oil, it ensures your skin remains nourished and well-hydrated.",
+          "category": "Anti-Acne",
+          "url": "https://www.mydermastore.in/products/details/o-wash-face-wash-230",
+          "ingredients": "Azelaic Acid, BioGenic Scleria, BioGenic Resveratrol, Scleria"
+        },
+        {
+          "name": "Cutishine Face Wash 70 gm.",
+          "price": "₹216",
+          "description": " Features a dual exfoliation with both AHA and BHA.Provides deep skin cleansing, leaving it radiant.Ideal for enhancing skin complexion.AHA and BHA work synergistically to exfoliate dead skin cells, revealing a renewed skin surface.Contains tea tree oil which aids in acne prevention and regulates oil secretion.",
+          "category": "Anti-Acne",
+          "url": "https://www.mydermastore.in/products/details/cutishine-face-wash-151",
+          "ingredients": "Glycolic Acid: Alpha hydroxy acid that exfoliates the skin.Aloe Vera Extract: Soothes and moisturizes the skin.Liquorice Extract: Acts against hyperpigmentation.Salicylic Acid: A beta hydroxy acid, ideal for acne-prone skin.D-Panthenol: Provitamin B5, offers deep hydration.Glycerine: Moisturizes and softens skin.Tea Tree Oil Globules: Natural antiseptic properties.Perfume: For a pleasant scent."
+        },
+        {
+          "name": "Benzonext 2.5% Gel 20 gm.",
+          "price": "₹72",
+          "description": " Benzo next Gel is a potent formulation containing Benzoyl Peroxide designed to combat mild to moderate acne.The gel acts by eradicating the bacteria responsible for acne formation and ensures pores remain unclogged.It offers protection against harmful free radicals from sun exposure.Benzonext Gel is also known to alleviate redness and inflammation resulting from acne.",
+          "category": "Anti-Acne",
+          "url": "https://www.mydermastore.in/products/details/benzonext-2-5-gel-187",
+          "ingredients": "Benzoyl Peroxide 2.5%"
+        },
+        {
+          "name": "Benzonext 5% gel 20 gm",
+          "price": "₹81",
+          "description": " Benzo next Gel is a potent formulation containing Benzoyl Peroxide designed to combat mild to moderate acne.The gel acts by eradicating the bacteria responsible for acne formation and ensures pores remain unclogged.It offers protection against harmful free radicals from sun exposureBenzonext Gel is also known to alleviate redness and inflammation resulting from acne.",
+          "category": "Anti-Acne",
+          "url": "https://www.mydermastore.in/products/details/benzonext-5-gel-228",
+          "ingredients": "Benzoyl Peroxide 5%"
+        },
+        {
+          "name": "Acmed Face Wash 70 gm",
+          "price": "₹198",
+          "description": "Targeted Treatment: Acmed Facewash is tailor-made for those with oily and acne-prone skin. It offers deep cleansing without stripping the skin of its natural oils.Clogged Pores No More: Its unique formulation works diligently on open pores, freeing them from the dirt and impurities that lead to breakoutsDeep Delivery: Features innovative small globules that ensure the active ingredients penetrate deeply, offering enhanced benefits.Antibacterial Power: Enriched with tea tree oil, known for its antibacterial properties, it combats the root cause of pimples and prevents their recurrence.Inflammation Reduction: Effectively reduces the redness and swelling often associated with acne.",
+          "category": "Anti-Acne",
+          "url": "https://www.mydermastore.in/products/details/acmed-face-wash-70gm-142",
+          "ingredients": "Salicylic Acid: An exfoliant that helps shed dead skin cells from the top layer of the skin.Tea Tree Oil Globules: Provides antibacterial properties to combat acne-causing bacteria.D-Panthenol: Also known as pro-vitamin B5, it offers hydration and soothing benefits.Aloe Vera Extract: Renowned for its skin-soothing and moisturizing properties."
+        },
+        {
+          "name": "Actreat Gel 20 gm.",
+          "price": "₹117",
+          "description": " ACtreat gel is a potent formulation combining Clindamycin and Nicotinamide to effectively combat severe acne manifestations.With its inherent antibacterial and antimicrobial properties, the gel seeks out and eliminates bacteria responsible for acne development.It not only curtails the growth of acne but also aids in the reduction of its size.ACtreat proactively addresses and alleviates redness and inflammation linked with acne, promoting clearer and more supple skin.",
+          "category": "Anti-Acne",
+          "url": "https://www.mydermastore.in/products/details/aczee-serum-754",
+          "ingredients": "Azelaic Acid, BioGenic Scleria, BioGenic Resveratrol, Scleria"
+        }
+        
+      ]
+    },
+    {
+      "name": "Anti Ageing",
+      "url": "https://ubiksolution.com/product-category/anti-ageing/",
+      "products": [
+        {
+          "name": "Reti K Cream 30 gm",
+          "price": "₹1349",
+          "description": "Reti K Anti-Aging Cream employs cutting-edge technology to combat visible signs of aging effectively.Formulated with microencapsulated retinol, it deeply penetrates skin layers, stimulating collagen production.Rich in vital vitamins, it fights aging signs such as wrinkles and fine lines while enhancing skin elasticity.Inceases skin resilience, diminishes age spots, crow's feet, sagging, and rough skin appearance.",
+          "category": "Anti Ageing",
+          "url": "https://www.mydermastore.in/products/details/reti-k-cream-169",
+          "ingredients": "Encapsulated Retinol Vitamin Vitamin CVitamin E"
+          
+        },
+        {
+          "name": "Liftage Anti Aging Serum 30 ml",
+          "price": "₹1260",
+          "description": "Cutting-Edge Technology: Liftage Serum is an advanced anti-aging serum crafted with cutting-edge technology.Multifunctional Base: Formulated with a multifunctional base, it enhances active absorption while providing protective nourishment to the skin.Encapsulated Drug Delivery: Unique encapsulation technology delivers actives precisely to the targeted area, ensuring prolonged action.Key Anti-Aging Actives: Contains Kollaren to boost collagen levels and Encapsulated Retinol, the gold standard anti-aging ingredient, reversing signs of aging.Signs of Aging Reduction: Effectively diminishes wrinkles, fine lines, crow’s feet, sagging skin, and photo-aged skin.",
+          "category": "Anti Ageing",
+          "url": "https://www.mydermastore.in/products/details/liftage-serum-224",
+          "ingredients": "Microencapsulated Retinol Lanablue SynColl KollarenSWT 7H"
+        },
+        {
+          "name": "Instafil Gel 15 gm",
+          "price": "₹539",
+          "description": "Instafil gel is a distinctive formula offering dual properties to conceal and heal fine lines and wrinkles.Conceals skin imperfections, providing a smoother skin texture.Functions as a filler for fine lines and wrinkles, offering a smooth surface before makeup application.Fades signs of aging, promoting a more youthful appearance.",
+          "category": "Anti Ageing",
+          "url": "https://www.mydermastore.in/products/details/instafil-gel-170",
+          "ingredients": "Matrixyl 3000 Vitamin A"
+        }
+      ]
+    }
+      ]
+}
