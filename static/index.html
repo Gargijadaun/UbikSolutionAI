@@ -509,7 +509,7 @@
     }
 async function speakWithElevenLabs(text) {
   const voiceId = '21m00Tcm4TlvDq8ikWAM'; // Change to your desired ElevenLabs Voice ID
-  const apiKey = 'YOUR_API_KEY_HERE'; // Never expose this in client-side code in production
+  const apiKey = 'sk_80c9bf4ae60510e0b31b9a649043e6d7ea42ad02ec76c159'; // Never expose this in client-side code in production
 
   try {
     const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
@@ -700,7 +700,9 @@ async function speakWithElevenLabs(text) {
       if (!isSpeaking) playIdleAnimation();
       document.getElementById('waveform').style.display = 'none';
     };
-
+  window.onload = function () {
+    appendMessage("Hello, I am Ubik AI.\n\nPlease feel free to ask me if you have any questions!", "bot", true);
+  };
     synth.onvoiceschanged = () => {
       const voice = getPreferredVoice();
       console.log('Selected voice on voiceschanged:', voice?.name || 'None');
