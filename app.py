@@ -63,43 +63,41 @@ def search_json(data, query):
     return results
 
 # -------------------------
-# Generate natural answer from JSON
+# Generate answer from JSON
 # -------------------------
-def generate_answer_from_json(query, max_items=3):
+def generate_answer_from_json(query, max_items=5):
     matches = search_json(ubik_info, query)
     if not matches:
         return None
-    
     answer_lines = []
     for item in matches[:max_items]:
         value = item['value']
         if isinstance(value, dict):
-            sentence = ", ".join(f"{k} is {v}" for k, v in value.items())
-            answer_lines.append(sentence)
+            value = ", ".join(f"{k}: {v}" for k, v in value.items())
         elif isinstance(value, list):
-            sentence = ", ".join(str(v) for v in value)
-            answer_lines.append(sentence)
-        else:
-            answer_lines.append(str(value))
-    
-    return ". ".join(answer_lines) + "."
+            value = ", ".join(str(v) for v in value)
+        answer_lines.append(str(value))
+    return " ".join(answer_lines)
 
 # -------------------------
-# Hybrid answer: JSON first, Gemini fallback
+# Hybrid answer (JSON first, Gemini fallback)
 # -------------------------
 def generate_answer(query):
-    # 1. Try JSON first
+    # 1. JSON search
     answer = generate_answer_from_json(query)
     if answer:
-        return answer
+        return answer  # Direct, confident answer
 
     # 2. Gemini fallback
     try:
+        context_json = json.dumps(ubik_info, indent=2)
         prompt = f"""
 You are UBIK AI, a professional assistant.
-Answer the user's question: "{query}"
-Provide a short, precise, confident answer in English.
-Do NOT mention JSON, data, or sources.
+User asked: "{query}"
+Reference JSON data:
+{context_json}
+
+Provide a short, precise, confident answer in English. Do NOT mention JSON or data sources.
 """
         model = genai.GenerativeModel('gemini-1.5-flash')
         response = model.generate_content(prompt)
@@ -207,7 +205,7 @@ def chatbot_reply():
         )
         return jsonify({"reply": reply})
 
-    # Generate hybrid answer
+    # Hybrid answer
     reply = generate_answer(corrected_message)
 
     return jsonify({"reply": reply})
