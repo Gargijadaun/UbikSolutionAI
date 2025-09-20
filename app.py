@@ -65,19 +65,30 @@ def search_json(data, query):
 # -------------------------
 # Generate answer from JSON
 # -------------------------
-def generate_answer_from_json(query, max_items=5):
+def generate_answer_from_json(query, max_items=1):  # Changed max_items to 1 for a single focused answer
     matches = search_json(ubik_info, query)
     if not matches:
         return None
-    answer_lines = []
-    for item in matches[:max_items]:
-        value = item['value']
-        if isinstance(value, dict):
-            value = ", ".join(f"{k}: {v}" for k, v in value.items())
-        elif isinstance(value, list):
-            value = ", ".join(str(v) for v in value)
-        answer_lines.append(str(value))
-    return " ".join(answer_lines)
+    
+    # Take the first relevant match
+    best_match = matches[0]
+    value = best_match['value']
+    
+    if isinstance(value, dict):
+        title = next((k for k in value.keys() if k == 'title'), None)
+        key_points = value.get('key_points', [])
+        affirmation = value.get('affirmation')
+        
+        if title and key_points:
+            return f"{value[title]}. Key strategies include: {', '.join(key_points[:3])}"  # Limit to 3 key points for brevity
+        elif affirmation:
+            return f"{value[title]}. {affirmation}"
+        else:
+            return str(value)
+    elif isinstance(value, list):
+        return ", ".join(str(v) for v in value[:3])  # Limit to 3 items if a list
+    else:
+        return str(value)
 
 # -------------------------
 # Hybrid answer (JSON first, Gemini fallback)
@@ -203,6 +214,11 @@ def chatbot_reply():
             "- I = Ilesh Khakkhar\n"
             "- K = Khakkar"
         )
+        return jsonify({"reply": reply})
+
+    # Check for "more" without additional context
+    if "more" in corrected_message.lower() and not any(word.lower() in corrected_message.lower() for word in ["about", "details", "information", "on"]):
+        reply = "Please specify what you want more details about ."
         return jsonify({"reply": reply})
 
     # Hybrid answer
