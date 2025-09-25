@@ -379,7 +379,7 @@
       controls.update();
 
       const loader = new THREE.GLTFLoader();
-      loader.load('static/AsianCharacter_14thJuly_TextureBaked_AnimUpdate_8_1_16thjuly.glb', function (gltf) {
+      loader.load('static/AsianCharacter_Comp25thSep.glb', function (gltf) {
         model = gltf.scene;
         model.position.set(0, 2, 0);
         model.rotation.set(0, 0, 0);
@@ -612,48 +612,76 @@
       speakWithElevenLabs(noEmojiText);
     }
 
-    function appendMessage(text, sender) {
-      const msg = document.createElement('div');
-      msg.className = `message ${sender}`;
-      msg.textContent = text;
-      messagesDiv.appendChild(msg);
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+function appendMessage(text, sender) {
+  const msg = document.createElement('div');
+  msg.className = `message ${sender}`;
 
-      if (sender === 'bot') {
-        speakText(text);
-      }
+  if (sender === 'bot') {
+    // Split message into parts
+    const parts = text.split(/,|•|;|\n/).map(s => s.trim()).filter(s => s);
+
+    // Detect items that look like names/products (words starting with uppercase)
+    const detectedItems = parts.filter(part => {
+      return /\b[A-Z][a-zA-Z0-9]+\b/.test(part);
+    });
+
+    if (detectedItems.length > 0) {
+      // Join all detected items with new lines
+      msg.innerHTML = detectedItems.join('<br>');
+    } else {
+      msg.textContent = text; // normal message
     }
 
-    async function sendMessage() {
-      const input = document.getElementById('userInput');
-      const text = input.value.trim();
-      if (!text) return;
+    speakText(text); // TTS still works
+  } else {
+    msg.textContent = text; // user messages unchanged
+  }
 
-      console.log('User input:', text);
-      appendMessage(text, 'user');
-      input.value = '...';
+  messagesDiv.appendChild(msg);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
 
-      try {
-        const res = await fetch('/api/chat', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ message: text })
-        });
+  async function sendMessage() {
+  const input = document.getElementById('userInput');
+  const text = input.value.trim();
+  if (!text) return;
 
-        const data = await res.json();
-        console.log('Server response:', data);
-        const reply = data.reply || "Sorry, something went wrong.";
-        appendMessage(reply, 'bot');
-        input.value = '';
-      } catch (err) {
-        console.error('Chat API error:', err);
-        appendMessage("Sorry, something went wrong.", 'bot');
-        input.value = '';
-      }
-    }
+  // Stop any ongoing audio and animations
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
+    currentAudio = null;
+  }
+  if (synth.speaking) {
+    synth.cancel(); // Stop any ongoing speech synthesis
+  }
+  stopMouthAnimation(); // Stop mouth animations
+  isSpeaking = false;
 
+  console.log('User input:', text);
+  appendMessage(text, 'user');
+  input.value = '...';
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ message: text })
+    });
+
+    const data = await res.json();
+    console.log('Server response:', data);
+    const reply = data.reply || "Sorry, something went wrong.";
+    appendMessage(reply, 'bot');
+    input.value = '';
+  } catch (err) {
+    console.error('Chat API error:', err);
+    appendMessage("Sorry, something went wrong.", 'bot');
+    input.value = '';
+  }
+}
     const inputField = document.getElementById('userInput');
     inputField.addEventListener('keydown', function (event) {
       if (event.key === 'Enter') {
@@ -712,16 +740,43 @@
     };
 
     // Initialize greeting and voice
-    window.onload = function () {
-      const greeting = "Hey! 😃 I’m UBIK AI, here to make things simple for you. " +
-                       "Want to know about products, doctors, or their benefits? Just ask – I’ve got the answers!";
-      appendMessage(greeting, "bot");
-      synth.onvoiceschanged = () => {
-        const voice = getPreferredVoice();
-        console.log('Selected voice on voiceschanged:', voice?.name || 'None');
-      };
-      synth.getVoices(); // Force voice list load
-    };
+window.onload = function () {
+  // Clear any existing audio on load
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
+    currentAudio = null;
+  }
+  if (synth.speaking) {
+    synth.cancel();
+  }
+  stopMouthAnimation();
+  isSpeaking = false;
+
+  // Show greeting on every load
+  const greeting = "Hey! 😃 I’m UBIK AI, here to make things simple for you. " +
+                   "Want to know about products, doctors, or their benefits? Just ask – I’ve got the answers!";
+  appendMessage(greeting, "bot");
+
+  synth.onvoiceschanged = () => {
+    const voice = getPreferredVoice();
+    console.log('Selected voice on voiceschanged:', voice?.name || 'None');
+  };
+  synth.getVoices();
+};
+
+window.addEventListener('beforeunload', () => {
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
+    currentAudio = null;
+  }
+  if (synth.speaking) {
+    synth.cancel();
+  }
+  stopMouthAnimation();
+  isSpeaking = false;
+});
   </script>
 </body>
 </html>

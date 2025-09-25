@@ -85,7 +85,11 @@
     // ---------------- Avatar 3D Setup ----------------
     let mixer, clock = new THREE.Clock();
     let animations = {}, rootBone = null, morphDict, morphInfluences;
-
+  window.addEventListener('beforeunload', () => {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+  }
+});
     function loadModelAnimations(gltf) {
       mixer = new THREE.AnimationMixer(gltf.scene);
       if (gltf.animations.length) {
@@ -235,7 +239,10 @@
         document.querySelector('.nav-buttons').style.display='flex';
         document.getElementById('answerInput').disabled=true;
       });
+    
     }
+    // Stop speech synthesis when the page is unloaded
+
   </script>
 </body>
 </html>

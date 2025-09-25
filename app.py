@@ -3,6 +3,7 @@ from flask_cors import CORS
 import os
 import json
 import google.generativeai as genai
+import re
 from dotenv import load_dotenv
 
 # -------------------------
@@ -41,7 +42,7 @@ def correct_spelling(user_input):
     return user_input
 
 # -------------------------
-# JSON search helper
+# JSON search helper (enhanced to prioritize relevant fields)
 # -------------------------
 def search_json(data, query):
     results = []
@@ -49,73 +50,139 @@ def search_json(data, query):
     def _search(obj, path=""):
         if isinstance(obj, dict):
             for k, v in obj.items():
+                # Skip irrelevant paths
+                if any(skip in path.lower() for skip in ['address', 'contact', 'name', 'isbn', 'publisher']):
+                    continue
+                # Prioritize matches in specific fields
                 if query.lower() in str(k).lower() or query.lower() in str(v).lower():
-                    results.append({"path": path + k, "value": v})
+                    if k in ['description', 'examples', 'kpis', 'title']:
+                        results.append({"path": path + k, "value": v, "priority": 2})
+                    else:
+                        results.append({"path": path + k, "value": v, "priority": 1})
                 _search(v, path + k + ".")
         elif isinstance(obj, list):
             for idx, item in enumerate(obj):
                 _search(item, path + f"[{idx}].")
         elif isinstance(obj, (str, int, float)):
-            if query.lower() in str(obj).lower():
-                results.append({"path": path[:-1], "value": obj})
+            if query.lower() in str(obj).lower() and not any(skip in path.lower() for skip in ['address', 'contact']):
+                results.append({"path": path[:-1], "value": obj, "priority": 1})
 
     _search(data)
     return results
 
 # -------------------------
-# Generate answer from JSON
+# Generate answer from JSON (improved to avoid JSON dumps)
 # -------------------------
-def generate_answer_from_json(query, max_items=1):  # Changed max_items to 1 for a single focused answer
+def generate_answer_from_json(query, max_items=3):
     matches = search_json(ubik_info, query)
     if not matches:
         return None
     
-    # Take the first relevant match
-    best_match = matches[0]
-    value = best_match['value']
+    # Relevance score: prioritize by field priority, query in value, and path depth
+    def relevance_score(match):
+        score = match['priority']
+        val_str = str(match['value']).lower()
+        if query.lower() in val_str:
+            score += 1.0  # Bonus for query in value
+        depth = match['path'].count('.')
+        score += depth * 0.5
+        # Penalize top-level matches to avoid broad dumps
+        if not match['path']:
+            score -= 1.0
+        return score
     
-    if isinstance(value, dict):
-        title = next((k for k in value.keys() if k == 'title'), None)
-        key_points = value.get('key_points', [])
-        affirmation = value.get('affirmation')
+    # Sort by relevance (descending)
+    matches.sort(key=relevance_score, reverse=True)
+    
+    # Take top relevant matches
+    top_matches = matches[:max_items]
+    
+    # Build concise response
+    summaries = []
+    for match in top_matches:
+        value = match['value']
+        path = match['path']
         
-        if title and key_points:
-            return f"{value[title]}. Key strategies include: {', '.join(key_points[:3])}"  # Limit to 3 key points for brevity
-        elif affirmation:
-            return f"{value[title]}. {affirmation}"
+        if isinstance(value, dict):
+            # Extract specific fields, avoid dumping entire dict
+            if 'description' in value:
+                desc = value['description'][:150] + '...' if len(value['description']) > 150 else value['description']
+                summaries.append(desc)
+            elif 'examples' in value:
+                examples = value['examples'][:2]
+                summaries.append("\n".join(f"- {example}" for example in examples))
+            elif 'kpis' in value:
+                kpis = value['kpis'][:2]
+                summaries.append("\n".join(f"- {kpi}" for kpi in kpis))
+            else:
+                title = next((k for k in value.keys() if k.lower() == 'title'), None)
+                if title and 'description' in value:
+                    summaries.append(f"{value[title]}: {value['description'][:100]}")
+                else:
+                    continue  # Skip broad dicts
+        elif isinstance(value, list):
+            summaries.append("\n".join(f"- {str(v)}" for v in value[:2]))
         else:
-            return str(value)
-    elif isinstance(value, list):
-        return ", ".join(str(v) for v in value[:3])  # Limit to 3 items if a list
-    else:
-        return str(value)
+            summaries.append(str(value)[:150])
+    
+    # Combine into natural response
+    if summaries:
+        return "\n".join(summaries)
+    
+    return None
 
 # -------------------------
-# Hybrid answer (JSON first, Gemini fallback)
+# Hybrid answer (JSON first, Gemini fallback with enhanced prompt)
 # -------------------------
 def generate_answer(query):
-    # 1. JSON search
+    # Correct single-word queries using JSON first
     answer = generate_answer_from_json(query)
+    
     if answer:
-        return answer  # Direct, confident answer
+        return answer  # Only return what's actually found
 
-    # 2. Gemini fallback
+    # If nothing found, fallback to Gemini but with a **strict instruction**
     try:
         context_json = json.dumps(ubik_info, indent=2)
         prompt = f"""
-You are UBIK AI, a professional assistant.
-User asked: "{query}"
-Reference JSON data:
-{context_json}
+        You are UBIK AI, an assistant for Ubik Solutions.
+        The user asked: "{query}"
 
-Provide a short, precise, confident answer in English. Do NOT mention JSON or data sources.
-"""
+        ONLY answer the question. Do NOT add extra details unrelated to the question.
+        Do NOT explain UBIK unless explicitly asked.
+        Base your answer solely on the JSON data below:
+
+        {context_json}
+        """
         model = genai.GenerativeModel('gemini-1.5-flash')
         response = model.generate_content(prompt)
         reply = response.text.strip().replace("*", "")
-        if not reply:
-            reply = "I could not find the information."
-        return reply
+        return reply if reply else "I could not find the information."
+    except Exception as e:
+        print("Gemini fallback error:", e)
+        return "I could not find the information."
+
+    
+    # Try JSON search first for multi-word queries
+    answer = generate_answer_from_json(query)
+    if answer and len(answer) < 200:  # Avoid overly long JSON responses
+        return answer
+
+    # Gemini fallback for multi-word queries if JSON result is absent or too broad
+    try:
+        context_json = json.dumps(ubik_info, indent=2)
+        prompt = f"""
+        You are UBIK AI, a professional assistant for Ubik Solutions.
+        User asked: "{query}"
+        Craft a short (50-100 words), precise, natural answer in English using ONLY the reference JSON data.
+        Do NOT return JSON or mention sources. Focus on key facts; infer context if needed (e.g., for 'products', highlight dermatology portfolio).
+        Reference JSON data:
+        {context_json}
+        """
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        response = model.generate_content(prompt)
+        reply = response.text.strip().replace("*", "")
+        return reply if reply else "I could not find the information."
     except Exception as e:
         print("Gemini fallback error:", e)
         return "I could not find the information."
@@ -147,29 +214,30 @@ def get_questions():
     try:
         context_data = json.dumps(ubik_info, indent=2)
         prompt = f"""
-Generate 5 open-ended quiz questions:
-{context_data}
-Each question should start with 'How', 'What', or 'Why'.
-Return as a JSON array.
-"""
+        Generate 5 open-ended quiz questions based on the JSON data below.
+        Each question should start with 'How', 'What', or 'Why' and be relevant to Ubik Solutions.
+        Return as a JSON array.
+        JSON data:
+        {context_data}
+        """
         model = genai.GenerativeModel('gemini-1.5-flash')
         response = model.generate_content(prompt)
         questions = json.loads(response.text.strip()) if response.text.strip().startswith('[') else [
-            "How does UBIK Solutions leverage AI for dermatology applications?",
-            "What are the key services offered by UBIK Solutions?",
-            "Why is UBIK Solutions' approach to dermatology unique?",
-            "What are the benefits of UBIK Solutions' Anti-Acne products?",
-            "How do UBIK Solutions' Anti-Ageing products work?"
+            "How does UBIK Solutions foster a supportive company culture?",
+            "What are the core values of UBIK Solutions?",
+            "Why is innovation important to UBIK Solutions' mission?",
+            "What roles do Medical Representatives play at UBIK Solutions?",
+            "How does UBIK Solutions engage with dermatologists?"
         ]
         return jsonify(questions[:5])
     except Exception as e:
         print("Quiz generation error:", e)
         return jsonify([
-            "How does UBIK Solutions leverage AI for dermatology applications?",
-            "What are the key services offered by UBIK Solutions?",
-            "Why is UBIK Solutions' approach to dermatology unique?",
-            "What are the benefits of UBIK Solutions' Anti-Acne products?",
-            "How do UBIK Solutions' Anti-Ageing products work?"
+            "How does UBIK Solutions foster a supportive company culture?",
+            "What are the core values of UBIK Solutions?",
+            "Why is innovation important to UBIK Solutions' mission?",
+            "What roles do Medical Representatives play at UBIK Solutions?",
+            "How does UBIK Solutions engage with dermatologists?"
         ])
 
 # -------------------------
@@ -183,7 +251,7 @@ def evaluate_answer():
 
     correct_answer = generate_answer(question)
 
-    # Simple scoring
+    # Simple scoring: partial match for relevance
     score = 1.0 if any(word.lower() in correct_answer.lower() for word in user_answer.split()) else 0.0
 
     return jsonify({
@@ -194,7 +262,7 @@ def evaluate_answer():
     })
 
 # -------------------------
-# Chat API
+# Chat API (enhanced for single-word queries)
 # -------------------------
 @app.route('/api/chat', methods=['POST'])
 def chatbot_reply():
@@ -211,17 +279,17 @@ def chatbot_reply():
             "UBIK stands for:\n"
             "- U = Utsav Khakkar\n"
             "- B = Bhavini Khakkar\n"
-            "- I = Ilesh Khakkhar\n"
+            "- I = Ilesh Khakhkhar\n"
             "- K = Khakkar"
         )
         return jsonify({"reply": reply})
 
     # Check for "more" without additional context
     if "more" in corrected_message.lower() and not any(word.lower() in corrected_message.lower() for word in ["about", "details", "information", "on"]):
-        reply = "Please specify what you want more details about ."
+        reply = "Please specify what you want more details about."
         return jsonify({"reply": reply})
 
-    # Hybrid answer
+    # Handle single-word queries with Gemini for better intent
     reply = generate_answer(corrected_message)
 
     return jsonify({"reply": reply})
