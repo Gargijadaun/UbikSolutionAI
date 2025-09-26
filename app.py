@@ -5,27 +5,39 @@ import json
 import google.generativeai as genai
 import re
 from dotenv import load_dotenv
+import logging
+
+# -------------------------
+# Configure logging to suppress ALTS warnings
+# -------------------------
+logging.getLogger('google.auth').setLevel(logging.ERROR)
 
 # -------------------------
 # Load environment
 # -------------------------
 load_dotenv()
-api_key = os.getenv("GOOGLE_API_KEY") or "AIzaSyCCz5Vrv76PE01k4ENPnhBYmgP-qcnbAJg"
+api_key = os.getenv("GOOGLE_API_KEY")or "AIzaSyCCz5Vrv76PE01k4ENPnhBYmgP-qcnbAJg"
 if not api_key:
-    raise ValueError("GOOGLE_API_KEY is not set.")
+    raise ValueError("GOOGLE_API_KEY is not set in .env file. Please add it.")
 genai.configure(api_key=api_key)
 
 # -------------------------
 # Load UBIK JSON data
 # -------------------------
-with open('ubik_data.json', 'r', encoding='utf-8') as f:
-    ubik_info = json.load(f)
+try:
+    with open('ubik_data.json', 'r', encoding='utf-8') as f:
+        ubik_info = json.load(f)
+except FileNotFoundError:
+    raise FileNotFoundError("ubik_data.json not found. Ensure it exists in the project root.")
+except json.JSONDecodeError:
+    raise ValueError("ubik_data.json is invalid. Check its JSON format.")
 
 # -------------------------
 # Flask app
 # -------------------------
 app = Flask(__name__, static_folder='static')
-CORS(app)
+# Restrict CORS for production; adjust origins as needed
+CORS(app, resources={r"/api/*": {"origins": ["http://localhost:5000", "https://your-domain.com"]}})
 
 # -------------------------
 # Spell correction
@@ -42,7 +54,7 @@ def correct_spelling(user_input):
     return user_input
 
 # -------------------------
-# JSON search helper (enhanced to prioritize relevant fields)
+# JSON search helper (prioritize relevant fields)
 # -------------------------
 def search_json(data, query):
     results = []
@@ -71,7 +83,7 @@ def search_json(data, query):
     return results
 
 # -------------------------
-# Generate answer from JSON (improved to avoid JSON dumps)
+# Generate answer from JSON
 # -------------------------
 def generate_answer_from_json(query, max_items=3):
     matches = search_json(ubik_info, query)
@@ -132,60 +144,32 @@ def generate_answer_from_json(query, max_items=3):
     return None
 
 # -------------------------
-# Hybrid answer (JSON first, Gemini fallback with enhanced prompt)
+# Hybrid answer (JSON first, Gemini fallback)
 # -------------------------
 def generate_answer(query):
-    # Correct single-word queries using JSON first
-    answer = generate_answer_from_json(query)
-    
-    if answer:
-        return answer  # Only return what's actually found
-
-    # If nothing found, fallback to Gemini but with a **strict instruction**
-    try:
-        context_json = json.dumps(ubik_info, indent=2)
-        prompt = f"""
-        You are UBIK AI, an assistant for Ubik Solutions.
-        The user asked: "{query}"
-
-        ONLY answer the question. Do NOT add extra details unrelated to the question.
-        Do NOT explain UBIK unless explicitly asked.
-        Base your answer solely on the JSON data below:
-
-        {context_json}
-        """
-        model = genai.GenerativeModel('gemini-1.5-flash')
-        response = model.generate_content(prompt)
-        reply = response.text.strip().replace("*", "")
-        return reply if reply else "I could not find the information."
-    except Exception as e:
-        print("Gemini fallback error:", e)
-        return "I could not find the information."
-
-    
-    # Try JSON search first for multi-word queries
+    # Correct query and try JSON search first
     answer = generate_answer_from_json(query)
     if answer and len(answer) < 200:  # Avoid overly long JSON responses
         return answer
 
-    # Gemini fallback for multi-word queries if JSON result is absent or too broad
+    # Fallback to Gemini with strict instructions
     try:
         context_json = json.dumps(ubik_info, indent=2)
         prompt = f"""
-        You are UBIK AI, a professional assistant for Ubik Solutions.
+        You are UBIK AI, an assistant for Ubik Solutions.
         User asked: "{query}"
         Craft a short (50-100 words), precise, natural answer in English using ONLY the reference JSON data.
         Do NOT return JSON or mention sources. Focus on key facts; infer context if needed (e.g., for 'products', highlight dermatology portfolio).
         Reference JSON data:
         {context_json}
         """
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel('gemini-2.5-flash')  # Updated to latest stable model
         response = model.generate_content(prompt)
         reply = response.text.strip().replace("*", "")
         return reply if reply else "I could not find the information."
     except Exception as e:
-        print("Gemini fallback error:", e)
-        return "I could not find the information."
+        print(f"Gemini error: {str(e)}")
+        return "Sorry, the AI service is temporarily unavailable. Please try again later."
 
 # -------------------------
 # Routes (static pages)
@@ -204,6 +188,10 @@ def quiz():
 
 @app.route('/<path:path>')
 def static_files(path):
+    # Check if file exists to avoid 404 errors (e.g., for teeth.png)
+    file_path = os.path.join('static', path)
+    if not os.path.exists(file_path):
+        return jsonify({"error": f"File {path} not found"}), 404
     return send_from_directory('static', path)
 
 # -------------------------
@@ -220,7 +208,7 @@ def get_questions():
         JSON data:
         {context_data}
         """
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel('gemini-2.5-flash')  # Updated to latest stable model
         response = model.generate_content(prompt)
         questions = json.loads(response.text.strip()) if response.text.strip().startswith('[') else [
             "How does UBIK Solutions foster a supportive company culture?",
@@ -231,7 +219,7 @@ def get_questions():
         ]
         return jsonify(questions[:5])
     except Exception as e:
-        print("Quiz generation error:", e)
+        print(f"Quiz generation error: {str(e)}")
         return jsonify([
             "How does UBIK Solutions foster a supportive company culture?",
             "What are the core values of UBIK Solutions?",
@@ -262,7 +250,7 @@ def evaluate_answer():
     })
 
 # -------------------------
-# Chat API (enhanced for single-word queries)
+# Chat API
 # -------------------------
 @app.route('/api/chat', methods=['POST'])
 def chatbot_reply():
@@ -289,13 +277,12 @@ def chatbot_reply():
         reply = "Please specify what you want more details about."
         return jsonify({"reply": reply})
 
-    # Handle single-word queries with Gemini for better intent
+    # Handle queries with JSON or Gemini
     reply = generate_answer(corrected_message)
-
     return jsonify({"reply": reply})
 
 # -------------------------
 # Start server
 # -------------------------
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5000)), debug=True)
